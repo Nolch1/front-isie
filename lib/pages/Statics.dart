@@ -59,10 +59,7 @@ class _StaticsPageState extends State<StaticsPage> {
                 color: Colors.black,
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()), // Replace LoginPage with your actual login page
-                );
+                _performLogout(context);
               },
             ),
           ),
@@ -115,10 +112,12 @@ class _StaticsPageState extends State<StaticsPage> {
                         controllers['${person['id']} Votes']!,
                         controllers['${person['id']} Confirmations']!,
                       );
+
                 }
 
                 if (success) {
                   print("Information sent successfully");
+                  _addNotes(userId.toString(), selectedPeople);
                   _showSuccessAlert();
                 } else {
                   showDialog(
@@ -276,7 +275,51 @@ class _StaticsPageState extends State<StaticsPage> {
       Navigator.of(context).pop(); // Close the alert
     });
   }
+  Future<void> _addNotes(String userId, List<Map<String, dynamic>> selectedPeople) async {
+    try {
+      for (var person in selectedPeople) {
+        final votesController = controllers['${person['id']} Votes'];
 
+        if (votesController != null) {
+          final response = await http.post(
+            Uri.parse('http://localhost:8000/api/addNotes'),
+            body: {
+              'user_id': userId,
+              'name': '${person['firstname']} ${person['lastname']}',
+              'votes': (int.tryParse(votesController.text) ?? 0).toString(),
+              'notes': (int.tryParse(votesController.text) ?? 0).toString(), // Include 'notes' field
+            },
+          );
+
+          if (response.statusCode != 200) {
+            print('Failed to add notes for ${person['firstname']} ${person['lastname']}. Status code: ${response.statusCode}');
+            print('Response body: ${response.body}');
+            // Handle failure, e.g., show an error message
+          }
+        } else {
+          print('Votes controller is null for ${person['firstname']} ${person['lastname']}');
+        }
+      }
+
+      print('All notes (votes) added successfully');
+      // Handle success, e.g., show a success message
+      _showSuccessAlert();
+    } catch (error) {
+      print('Error adding notes (votes): $error');
+      // Handle error, e.g., show an error message
+    }
+  }
+
+
+  // Function to perform the logout operation
+  void _performLogout(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.signUserOut(); // Call the signUserOut method
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
   // Function to show the add name dialog
   Future<void> _showAddNameDialog(String userId) async {
     String firstName = '';
@@ -339,6 +382,14 @@ class _StaticsPageState extends State<StaticsPage> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         selectedPeople = List<Map<String, dynamic>>.from(data['selectedPeople']);
+
+        // Initialize controllers for votes, confirmations, and notes
+        for (var person in selectedPeople) {
+          controllers['${person['id']} Votes'] = TextEditingController();
+          controllers['${person['id']} Confirmations'] = TextEditingController();
+          controllers['${person['id']} Notes'] = TextEditingController();
+        }
+
         setState(() {
           isLoading = false; // Set isLoading to false when data is loaded
         });
@@ -349,7 +400,6 @@ class _StaticsPageState extends State<StaticsPage> {
       print('Error fetching data: $error');
     }
   }
-
 
 
   // Function to add a name to the backend

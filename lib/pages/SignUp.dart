@@ -42,7 +42,8 @@ class SignUp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        automaticallyImplyLeading: false, // Remove the back arrow
+        title: null, // Remove the title
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -51,11 +52,11 @@ class SignUp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
+
                 Image.asset(
                   'assets/logo.png', // Replace 'logo.png' with your actual image file path
-                  width: 150, // Adjust the width as needed
-                  height: 150, // Adjust the height as needed
+                  width: 200, // Adjust the width as needed
+                  height: 200, // Adjust the height as needed
                 ),
                 SizedBox(height: 20),
                 Text(

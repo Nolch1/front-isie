@@ -107,10 +107,7 @@ class _AjoutStatPageState extends State<AjoutStatPage> {
                 color: Colors.black, // Change the color to your preference
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()), // Replace LoginPage with your actual login page
-                );
+                _performLogout(context);
               },
             ),
           ),
@@ -305,6 +302,16 @@ class _AjoutStatPageState extends State<AjoutStatPage> {
       ],
     );
   }
+  // Function to perform the logout operation
+  void _performLogout(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.signUserOut(); // Call the signUserOut method
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
 
   // Function to check if votes and confirmations are equal for a specific group
   bool _checkVotesConfirmationsEquality(String title) {
